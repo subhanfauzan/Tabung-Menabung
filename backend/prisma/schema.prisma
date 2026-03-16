@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String     // Bcrypt hashed
+  name         String
+  dailyBudget  Float?     @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+
+  @@index([email])
+}
+
+model Account {
+  id        String     @id @default(cuid())
+  userId    String
+  name      String     // "Cash", "Bank", "E-wallet"
+  type      String     // "cash", "bank", "ewallet"
+  balance   Float      @default(0)
+  currency  String     @default("USD")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  userId    String?    // NULL for predefined categories, user ID for custom
+  name      String
+  type      String     // "income" or "expense"
+  icon      String?    // Icon name or emoji
+  color     String?    // Hex color code
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  user         User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([type])
+}
+
+model Transaction {
+  id        String     @id @default(cuid())
+  userId    String
+  accountId String
+  categoryId String
+  amount    Float
+  type      String     // "income" or "expense"
+  date      DateTime
+  note      String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([date])
+}
