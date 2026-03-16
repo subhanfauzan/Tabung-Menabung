@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: finance_app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URL=mysql://root:${DB_ROOT_PASSWORD:-rootpassword}@db:3306/finance_app
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET:-your-super-secret-refresh-key-change-this-in-production}
+      - PORT=3003
+      - NODE_ENV=production
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:5173}
+    depends_on:
+      db:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Default VITE_API_URL is /api so Nginx will proxy /api to the backend
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - frontend
+
+volumes:
+  db_data:
