@@ -1,23 +1,17 @@
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
-# Copy package files and install dependencies
 COPY package*.json ./
-COPY prisma ./prisma/
 
 RUN npm install
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Copy project files
 COPY . .
 
-# Build the TypeScript application
-RUN npx tsc
+RUN npx prisma generate
+
+RUN npm run build
 
 EXPOSE 3003
 
-# Command to run the backend application
-CMD ["node", "dist/app.js"]
+CMD ["npm", "start"]
