@@ -8,8 +8,10 @@ RUN npm install
 
 COPY . .
 
-RUN npx prisma generate
+# FIX permission
+RUN chmod -R 755 /app
 
+RUN npx prisma generate
 RUN npm run build
 
 EXPOSE 3003

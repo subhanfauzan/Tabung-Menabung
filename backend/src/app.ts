@@ -11,9 +11,15 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration — allow localhost + any local network IP (for mobile testing)
-const allowedOrigins = [
+// CORS configuration — allow configured origins + local network IPs
+const extraOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const allowedOrigins: (string | RegExp)[] = [
   env.FRONTEND_URL,
+  ...extraOrigins,
   /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/,
   /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/,
   /^http:\/\/172\.(1[6-9]|2\d|3[01])\.\d+\.\d+(:\d+)?$/,
