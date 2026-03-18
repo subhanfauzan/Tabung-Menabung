@@ -213,6 +213,13 @@ export class AnalyticsService {
       targetDate.setDate(targetDate.getDate() - i);
       targetDate.setHours(0, 0, 0, 0);
 
+      const userStartOfDay = new Date(user.createdAt);
+      userStartOfDay.setHours(0, 0, 0, 0);
+
+      if (targetDate < userStartOfDay) {
+        break; // Stop checking days before the account was created
+      }
+
       const endOfDay = new Date(targetDate);
       endOfDay.setHours(23, 59, 59, 999);
 

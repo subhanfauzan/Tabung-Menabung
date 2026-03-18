@@ -148,34 +148,19 @@ export const DashboardPage: React.FC = () => {
             <div>
               <p className="text-white/80 text-xs font-medium mb-0.5">Selamat Datang kembali,</p>
               <h2 className="text-white text-lg font-bold flex items-center gap-2">
-                {user?.name || "Pengguna"} 👋
+                {user?.name || "Pengguna"}
               </h2>
-              {/* Stars & Streak */}
-              {consistency && (
+              {/* Streak info */}
+              {consistency && consistency.budget > 0 && (
                 <div 
-                  className="flex items-center gap-2 mt-1.5 cursor-pointer hover:bg-white/10 p-1 -ml-1 rounded transition-colors"
+                  className="inline-flex items-center gap-1.5 mt-2 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md px-3 py-1.5 rounded-full cursor-pointer transition-all"
                   onClick={() => setIsBudgetModalOpen(true)}
-                  title="Klik untuk mengatur batas pengeluaran harian"
+                  title="Target Harian Aktif"
                 >
-                  <div className="flex gap-0.5">
-                    {consistency.history.length > 0 ? (
-                      [...consistency.history].reverse().map((day: any, idx: number) => (
-                        <span key={idx} className={`material-symbols-outlined text-[16px] ${day.isUnderBudget ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]' : 'text-rose-500 opacity-80'}`}>
-                          star
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-white/60 text-[11px] font-medium bg-white/10 px-2 py-0.5 rounded-full">Set Target Harian</span>
-                    )}
-                  </div>
-                  {consistency.budget > 0 && consistency.streak >= 0 && (
-                     <div className="flex items-center gap-1 pr-2">
-                       <span className={`material-symbols-outlined text-[14px] ${consistency.streak > 0 ? 'text-orange-400' : 'text-slate-400'}`}>
-                         local_fire_department
-                       </span>
-                       <span className="text-white/90 text-xs font-bold">{consistency.streak}</span>
-                     </div>
-                  )}
+                  <span className={`material-symbols-outlined text-[16px] ${consistency.streak > 0 ? 'text-orange-400 animate-pulse drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]' : 'text-slate-300'}`}>
+                    local_fire_department
+                  </span>
+                  <span className="text-white text-xs font-bold">Streak: {consistency.streak} Hari</span>
                 </div>
               )}
             </div>
@@ -189,6 +174,36 @@ export const DashboardPage: React.FC = () => {
 
       {/* Main Content (Overlapping) */}
       <div className="relative z-20 px-6 -mt-[4.5rem]">
+        
+        {/* Banner if budget is 0 */}
+        {consistency && consistency.budget === 0 && (
+          <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/15 to-orange-500/15 dark:from-amber-500/10 dark:to-orange-500/10 border border-amber-500/20 rounded-3xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row items-center gap-5 sm:gap-6 shadow-sm backdrop-blur-xl">
+            <div className="absolute -right-12 -top-12 w-32 h-32 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -left-12 -bottom-12 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30 text-white relative z-10">
+              <span className="material-symbols-outlined text-3xl">local_fire_department</span>
+            </div>
+            
+            <div className="flex-1 min-w-0 text-center sm:text-left z-10">
+              <h4 className="text-slate-900 dark:text-slate-100 font-extrabold text-base mb-1.5 tracking-tight">Aktifkan Fitur Streak Harian! 🚀</h4>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-xl mx-auto sm:mx-0">
+                Atur target maksimal pengeluaran harian. Kumpulkan <strong className="text-slate-800 dark:text-slate-200">streak api</strong> setiap hari Anda berhasil berhemat di bawah target!
+              </p>
+            </div>
+            
+            <div className="shrink-0 w-full sm:w-auto z-10 mt-2 sm:mt-0">
+              <button 
+                onClick={() => setIsBudgetModalOpen(true)}
+                className="w-full sm:w-auto bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-bold py-3 px-6 rounded-xl shadow-lg shadow-slate-900/20 dark:shadow-white/20 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+              >
+                <span>Atur Target</span>
+                <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Total Balance Card */}
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 backdrop-blur-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
@@ -335,7 +350,8 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
           )}
-        </div>        {/* Daily Trend Chart */}
+        </div>
+        {/* Daily Trend Chart */}
         <div className="mt-8 mb-4">
           <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg">Trend Pemasukan & Pengeluaran Harian</h3>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Minggu ini</p>

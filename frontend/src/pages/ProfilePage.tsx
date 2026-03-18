@@ -79,8 +79,13 @@ export const ProfilePage: React.FC = () => {
     setPwError("");
     try {
       await authService.changePassword(currentPassword, newPassword);
-      setPwSuccess("Kata sandi berhasil diubah!");
-      setTimeout(() => { setActiveModal(null); setPwSuccess(""); }, 1500);
+      setPwSuccess("Kata sandi berhasil diubah! Anda akan dialihkan...");
+      setTimeout(() => { 
+        setActiveModal(null); 
+        setPwSuccess(""); 
+        logout();
+        navigate("/login");
+      }, 1500);
     } catch (err: any) {
       setPwError(err.response?.data?.error || "Gagal mengubah kata sandi");
     } finally {
