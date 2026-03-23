@@ -133,8 +133,11 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Public Landing Page */}
-      <Route path="/" element={<LandingPage />} />
+      {/* Root → Login */}
+      <Route path="/" element={<LoginPage />} />
+
+      {/* Landing Page (optional) */}
+      <Route path="/landing" element={<LandingPage />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />

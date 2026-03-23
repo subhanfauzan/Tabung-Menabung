@@ -12,14 +12,14 @@ export interface JwtPayload {
  * Generate JWT access token
  */
 export const generateAccessToken = (userId: string, email: string): string => {
-  return jwt.sign({ userId, email }, env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ userId, email }, env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 /**
  * Generate refresh token
  */
 export const generateRefreshToken = (userId: string): string => {
-  return jwt.sign({ userId }, env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ userId }, env.REFRESH_TOKEN_SECRET, { expiresIn: "30d" });
 };
 
 /**
