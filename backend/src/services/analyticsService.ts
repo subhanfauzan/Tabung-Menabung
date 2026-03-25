@@ -1,5 +1,5 @@
 import { prisma } from "../config/database";
-import { getStartOfMonth, getEndOfMonth } from "../utils/helpers";
+import { getStartOfMonth, getEndOfMonth, getSalaryPeriod } from "../utils/helpers";
 
 /**
  * Analytics Service
@@ -7,12 +7,24 @@ import { getStartOfMonth, getEndOfMonth } from "../utils/helpers";
  */
 export class AnalyticsService {
   /**
-   * Get dashboard summary (balance, income, expenses for current month)
+   * Get dashboard summary (balance, income, expenses for current period)
+   * Uses salary cycle period if salaryDate is set, otherwise falls back to calendar month.
    */
   static async getDashboardSummary(userId: string) {
-    const now = new Date();
-    const currentMonthStart = getStartOfMonth(now);
-    const currentMonthEnd = getEndOfMonth(now);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    let periodStart: Date;
+    let periodEnd: Date;
+
+    if (user?.salaryDate) {
+      const period = getSalaryPeriod(user.salaryDate);
+      periodStart = period.start;
+      periodEnd = period.end;
+    } else {
+      const now = new Date();
+      periodStart = getStartOfMonth(now);
+      periodEnd = getEndOfMonth(now);
+    }
 
     // Get total balance across all accounts
     const balanceResult = await prisma.account.aggregate({
@@ -20,22 +32,22 @@ export class AnalyticsService {
       _sum: { balance: true },
     });
 
-    // Get income this month
+    // Get income this period
     const incomeResult = await prisma.transaction.aggregate({
       where: {
         userId,
         type: "income",
-        date: { gte: currentMonthStart, lte: currentMonthEnd },
+        date: { gte: periodStart, lte: periodEnd },
       },
       _sum: { amount: true },
     });
 
-    // Get expenses this month
+    // Get expenses this period
     const expenseResult = await prisma.transaction.aggregate({
       where: {
         userId,
         type: "expense",
-        date: { gte: currentMonthStart, lte: currentMonthEnd },
+        date: { gte: periodStart, lte: periodEnd },
       },
       _sum: { amount: true },
     });
@@ -44,6 +56,50 @@ export class AnalyticsService {
       balance: balanceResult._sum.balance || 0,
       monthlyIncome: incomeResult._sum.amount || 0,
       monthlyExpenses: expenseResult._sum.amount || 0,
+    };
+  }
+
+  /**
+   * Get salary cycle summary for the current active period
+   */
+  static async getSalaryCycleSummary(userId: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    let periodStart: Date;
+    let periodEnd: Date;
+    let periodLabel: string;
+
+    if (user.salaryDate) {
+      const period = getSalaryPeriod(user.salaryDate);
+      periodStart = period.start;
+      periodEnd = period.end;
+      periodLabel = period.label;
+    } else {
+      const now = new Date();
+      periodStart = getStartOfMonth(now);
+      periodEnd = getEndOfMonth(now);
+      const monthNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+      periodLabel = `1 ${monthNames[now.getMonth()]} – ${periodEnd.getDate()} ${monthNames[now.getMonth()]}`;
+    }
+
+    const incomeResult = await prisma.transaction.aggregate({
+      where: { userId, type: "income", date: { gte: periodStart, lte: periodEnd } },
+      _sum: { amount: true },
+    });
+
+    const expenseResult = await prisma.transaction.aggregate({
+      where: { userId, type: "expense", date: { gte: periodStart, lte: periodEnd } },
+      _sum: { amount: true },
+    });
+
+    return {
+      salaryDate: user.salaryDate,
+      periodStart: periodStart.toISOString(),
+      periodEnd: periodEnd.toISOString(),
+      periodLabel,
+      income: incomeResult._sum.amount || 0,
+      expenses: expenseResult._sum.amount || 0,
     };
   }
 

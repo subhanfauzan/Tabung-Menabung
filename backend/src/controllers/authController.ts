@@ -100,12 +100,12 @@ export class AuthController {
         res.status(401).json({ error: "Unauthorized" });
         return;
       }
-      const { name, email, dailyBudget } = req.body;
-      if (name === undefined && email === undefined && dailyBudget === undefined) {
+      const { name, email, dailyBudget, salaryDate } = req.body;
+      if (name === undefined && email === undefined && dailyBudget === undefined && salaryDate === undefined) {
         res.status(400).json({ error: "Provide data to update" });
         return;
       }
-      const updated = await AuthService.updateProfile(req.userId, { name, email, dailyBudget });
+      const updated = await AuthService.updateProfile(req.userId, { name, email, dailyBudget, salaryDate });
       res.json(updated);
     } catch (error) {
       next(error);

@@ -134,4 +134,40 @@ export class AccountController {
       next(error);
     }
   }
+
+  /**
+   * Transfer funds between two accounts
+   * POST /api/accounts/transfer
+   */
+  static async transfer(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.userId) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const { fromAccountId, toAccountId, amount, note } = req.body;
+
+      if (!fromAccountId || !toAccountId) {
+        res.status(400).json({ error: "fromAccountId dan toAccountId wajib diisi" });
+        return;
+      }
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        res.status(400).json({ error: "Jumlah transfer tidak valid" });
+        return;
+      }
+
+      const result = await AccountService.transferFunds(
+        req.userId,
+        fromAccountId,
+        toAccountId,
+        Number(amount),
+        note,
+      );
+
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

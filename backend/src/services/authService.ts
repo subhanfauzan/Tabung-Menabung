@@ -58,7 +58,7 @@ export class AuthService {
       },
     });
 
-    return { id: user.id, email: user.email, name: user.name, dailyBudget: user.dailyBudget };
+    return { id: user.id, email: user.email, name: user.name, dailyBudget: user.dailyBudget, salaryDate: user.salaryDate };
   }
 
   /**
@@ -94,7 +94,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, name: user.name, dailyBudget: user.dailyBudget },
+      user: { id: user.id, email: user.email, name: user.name, dailyBudget: user.dailyBudget, salaryDate: user.salaryDate },
     };
   }
 
@@ -104,7 +104,7 @@ export class AuthService {
   static async getProfile(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, dailyBudget: true, createdAt: true },
+      select: { id: true, email: true, name: true, dailyBudget: true, salaryDate: true, createdAt: true },
     });
 
     if (!user) {
@@ -119,7 +119,7 @@ export class AuthService {
   /**
    * Update user profile (name and/or email)
    */
-  static async updateProfile(userId: string, payload: { name?: string; email?: string, dailyBudget?: number }) {
+  static async updateProfile(userId: string, payload: { name?: string; email?: string; dailyBudget?: number; salaryDate?: number | null }) {
     if (payload.email) {
       // Check email is not taken by another user
       const existing = await prisma.user.findUnique({ where: { email: payload.email } });
@@ -133,7 +133,7 @@ export class AuthService {
     const user = await prisma.user.update({
       where: { id: userId },
       data: payload,
-      select: { id: true, email: true, name: true, dailyBudget: true, createdAt: true },
+      select: { id: true, email: true, name: true, dailyBudget: true, salaryDate: true, createdAt: true },
     });
 
     return user;

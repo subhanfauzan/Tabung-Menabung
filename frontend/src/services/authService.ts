@@ -37,7 +37,7 @@ export const authService = {
   /**
    * Update user profile (name and/or email and/or dailyBudget)
    */
-  updateProfile: async (data: { name?: string; email?: string; dailyBudget?: number }): Promise<User> => {
+  updateProfile: async (data: { name?: string; email?: string; dailyBudget?: number; salaryDate?: number | null }): Promise<User> => {
     const response = await api.put("/auth/profile", data);
     return response.data;
   },

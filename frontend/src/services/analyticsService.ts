@@ -4,6 +4,7 @@ import {
   CategoryBreakdown,
   MonthlySummary,
   DateRangeSummary,
+  SalaryCycleSummary,
 } from "../types";
 
 export const analyticsService = {
@@ -71,6 +72,14 @@ export const analyticsService = {
    */
   getDailyConsistency: async (): Promise<any> => {
     const response = await api.get("/analytics/daily-consistency");
+    return response.data;
+  },
+
+  /**
+   * Get salary cycle summary for the current active pay period
+   */
+  getSalaryCycleSummary: async (): Promise<SalaryCycleSummary> => {
+    const response = await api.get("/analytics/salary-cycle-summary");
     return response.data;
   },
 };

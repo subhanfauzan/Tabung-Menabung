@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { authService } from "../services/authService";
 import { useTheme } from "../context/ThemeContext";
 
-type ModalType = "editProfile" | "changePassword" | null;
+type ModalType = "editProfile" | "changePassword" | "salaryDate" | null;
 
 export const ProfilePage: React.FC = () => {
   const { user, logout, updateUser } = useAuth();
@@ -29,14 +29,24 @@ export const ProfilePage: React.FC = () => {
   const [pwSuccess, setPwSuccess] = useState("");
   const [pwError, setPwError] = useState("");
 
+  // Salary Date state
+  const [tempSalaryDate, setTempSalaryDate] = useState("");
+  const [salaryLoading, setSalaryLoading] = useState(false);
+  const [salarySuccess, setSalarySuccess] = useState("");
+  const [salaryError, setSalaryError] = useState("");
+
   const openModal = (modal: ModalType) => {
     // Reset state when opening
     setProfileError(""); setProfileSuccess("");
     setPwError(""); setPwSuccess("");
+    setSalaryError(""); setSalarySuccess("");
     setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
     if (modal === "editProfile") {
       setName(user?.name || "");
       setEmail(user?.email || "");
+    }
+    if (modal === "salaryDate") {
+      setTempSalaryDate(user?.salaryDate ? String(user.salaryDate) : "");
     }
     setActiveModal(modal);
   };
@@ -90,6 +100,27 @@ export const ProfilePage: React.FC = () => {
       setPwError(err.response?.data?.error || "Gagal mengubah kata sandi");
     } finally {
       setPwLoading(false);
+    }
+  };
+
+  const handleSaveSalaryDate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const day = parseInt(tempSalaryDate);
+    if (!tempSalaryDate || isNaN(day) || day < 1 || day > 31) {
+      setSalaryError("Masukkan tanggal antara 1 – 31");
+      return;
+    }
+    setSalaryLoading(true);
+    setSalaryError("");
+    try {
+      const updated = await authService.updateProfile({ salaryDate: day });
+      updateUser(updated);
+      setSalarySuccess("Tanggal gajian berhasil disimpan!");
+      setTimeout(() => { setActiveModal(null); setSalarySuccess(""); }, 1500);
+    } catch (err: any) {
+      setSalaryError(err.response?.data?.error || "Gagal menyimpan tanggal gajian");
+    } finally {
+      setSalaryLoading(false);
     }
   };
 
@@ -155,6 +186,26 @@ export const ProfilePage: React.FC = () => {
               iconBg="bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
               onClick={() => openModal("changePassword")}
             />
+            <div className="h-px bg-slate-100 dark:bg-slate-800 mx-4 my-0.5"></div>
+            <button
+              onClick={() => openModal("salaryDate")}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                  <span className="material-symbols-outlined text-xl">payments</span>
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm">Tanggal Gajian</span>
+                  {user?.salaryDate ? (
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Setiap tanggal {user.salaryDate}</span>
+                  ) : (
+                    <span className="text-xs text-slate-400 font-medium">Belum diatur</span>
+                  )}
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
+            </button>
           </div>
         </div>
 
@@ -238,7 +289,7 @@ export const ProfilePage: React.FC = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                {activeModal === "editProfile" ? "Ubah Profil" : "Ganti Kata Sandi"}
+                {activeModal === "editProfile" ? "Ubah Profil" : activeModal === "salaryDate" ? "Tanggal Gajian" : "Ganti Kata Sandi"}
               </h2>
               <button
                 onClick={() => setActiveModal(null)}
@@ -315,6 +366,73 @@ export const ProfilePage: React.FC = () => {
                     </span>
                   ) : "Simpan Perubahan"}
                 </button>
+              </form>
+            )}
+
+            {/* Salary Date Form */}
+            {activeModal === "salaryDate" && (
+              <form onSubmit={handleSaveSalaryDate} className="p-6 space-y-5">
+                {salaryError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm rounded-xl text-center">{salaryError}</div>
+                )}
+                {salarySuccess && (
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm rounded-xl text-center flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                    {salarySuccess}
+                  </div>
+                )}
+
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Atur tanggal gajian Anda. Sistem akan menghitung periode keuangan dari tanggal ini hingga sehari sebelum tanggal yang sama di bulan berikutnya.
+                </p>
+
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setTempSalaryDate(String(day))}
+                      className={`aspect-square rounded-xl text-sm font-bold transition-all ${
+                        tempSalaryDate === String(day)
+                          ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110"
+                          : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-primary/10 hover:text-primary"
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+
+                {tempSalaryDate && (
+                  <div className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl">
+                    <span className="material-symbols-outlined text-emerald-500 text-xl">event_available</span>
+                    <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                      Periode: setiap tanggal <strong>{tempSalaryDate}</strong> hingga tanggal <strong>{parseInt(tempSalaryDate) - 1 || 31}</strong> bulan berikutnya
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(null)}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={salaryLoading || !!salarySuccess || !tempSalaryDate}
+                    className="flex-1 py-3 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-primary/30 disabled:opacity-60"
+                  >
+                    {salaryLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined animate-spin text-lg">refresh</span>
+                        Menyimpan...
+                      </span>
+                    ) : "Simpan"}
+                  </button>
+                </div>
               </form>
             )}
 

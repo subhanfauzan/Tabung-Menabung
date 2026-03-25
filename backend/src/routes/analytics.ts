@@ -29,3 +29,7 @@ analyticsRouter.get(
   "/daily-consistency",
   AnalyticsController.getDailyConsistency,
 );
+analyticsRouter.get(
+  "/salary-cycle-summary",
+  AnalyticsController.getSalaryCycleSummary,
+);

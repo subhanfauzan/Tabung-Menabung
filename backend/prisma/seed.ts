@@ -14,11 +14,12 @@ const defaultCategories = [
   { name: "Rumah", type: "expense", icon: "home", color: "#f59e0b" },
   { name: "Pakaian", type: "expense", icon: "checkroom", color: "#6366f1" },
   { name: "Lainnya", type: "expense", icon: "category", color: "#6b7280" },
+  { name: "Transfer Keluar", type: "expense", icon: "swap_horiz", color: "#64748b" },
   // Income categories
   { name: "Gaji", type: "income", icon: "payments", color: "#10b981" },
   { name: "Freelance", type: "income", icon: "work", color: "#3b82f6" },
   { name: "Investasi", type: "income", icon: "trending_up", color: "#8b5cf6" },
-  { name: "Transfer Masuk", type: "income", icon: "account_balance_wallet", color: "#f59e0b" },
+  { name: "Transfer Masuk", type: "income", icon: "swap_horiz", color: "#64748b" },
   { name: "Bonus", type: "income", icon: "redeem", color: "#ec4899" },
   { name: "Pendapatan Lain", type: "income", icon: "monetization_on", color: "#6b7280" },
 ];

@@ -3,6 +3,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  dailyBudget?: number | null;
+  salaryDate?: number | null;
   createdAt?: string;
 }
 
@@ -76,6 +78,15 @@ export interface DateRangeSummary {
   income: number;
   expenses: number;
   net: number;
+}
+
+export interface SalaryCycleSummary {
+  salaryDate: number | null;
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+  income: number;
+  expenses: number;
 }
 
 // Form types

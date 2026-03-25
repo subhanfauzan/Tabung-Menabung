@@ -191,4 +191,26 @@ export class AnalyticsController {
       next(error);
     }
   }
+
+  /**
+   * Get salary cycle summary
+   * GET /api/analytics/salary-cycle-summary
+   */
+  static async getSalaryCycleSummary(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      if (!req.userId) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
+      const summary = await AnalyticsService.getSalaryCycleSummary(req.userId);
+      res.json(summary);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

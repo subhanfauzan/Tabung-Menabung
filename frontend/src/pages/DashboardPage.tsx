@@ -6,7 +6,7 @@ import { analyticsService } from "../services/analyticsService";
 import { transactionService } from "../services/transactionService";
 import { authService } from "../services/authService";
 import { formatCurrency, formatRelativeTime } from "../utils/formatters";
-import { DashboardSummary, CategoryBreakdown, Transaction } from "../types";
+import { DashboardSummary, CategoryBreakdown, Transaction, SalaryCycleSummary } from "../types";
 import { CHART_COLORS } from "../utils/constants";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -17,6 +17,7 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   useNow(); // tick every 60s to keep relative timestamps fresh
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [salaryCycle, setSalaryCycle] = useState<SalaryCycleSummary | null>(null);
   const [expenseData, setExpenseData] = useState<CategoryBreakdown[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [dailyTrend, setDailyTrend] = useState<{ day: string; pengeluaran: number; pemasukan: number }[]>([]);
@@ -28,14 +29,16 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [summaryData, expenseBreakdown, allTransactions, consistencyData] = await Promise.all([
+        const [summaryData, expenseBreakdown, allTransactions, consistencyData, cycleData] = await Promise.all([
           analyticsService.getDashboardSummary(),
           analyticsService.getExpenseCategoryBreakdown(),
           transactionService.getTransactions(),
           analyticsService.getDailyConsistency(),
+          analyticsService.getSalaryCycleSummary(),
         ]);
 
         setConsistency(consistencyData);
+        setSalaryCycle(cycleData);
         if (consistencyData?.budget) {
           setTempBudget(String(consistencyData.budget));
         }
@@ -212,6 +215,14 @@ export const DashboardPage: React.FC = () => {
             <div>
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Total Saldo</p>
               <h1 className="text-slate-900 dark:text-slate-100 text-3xl sm:text-4xl font-black tracking-tight">{formatCurrency(summary?.balance || 0, "IDR")}</h1>
+              {salaryCycle && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="material-symbols-outlined text-[14px] text-emerald-500">calendar_month</span>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Periode: <span className="text-emerald-600 dark:text-emerald-400 font-bold">{salaryCycle.periodLabel}</span>
+                  </p>
+                </div>
+              )}
             </div>
             <Link to="/accounts" className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary hover:bg-primary/10 transition-colors border border-slate-100 dark:border-slate-700">
               <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
@@ -226,7 +237,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Pemasukan</p>
               </div>
-              <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{formatCurrency(summary?.monthlyIncome || 0, "IDR")}</p>
+              <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{formatCurrency(salaryCycle?.income ?? summary?.monthlyIncome ?? 0, "IDR")}</p>
             </div>
             
             <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800">
@@ -236,7 +247,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Pengeluaran</p>
               </div>
-              <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{formatCurrency(summary?.monthlyExpenses || 0, "IDR")}</p>
+              <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{formatCurrency(salaryCycle?.expenses ?? summary?.monthlyExpenses ?? 0, "IDR")}</p>
             </div>
           </div>
 
@@ -276,9 +287,26 @@ export const DashboardPage: React.FC = () => {
 
         {/* Category Donut Chart */}
         <div className="mt-8 mb-4 flex justify-between items-center">
-          <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg">Pengeluaran Bulan Ini</h3>
+          <div>
+            <h3 className="text-slate-900 dark:text-slate-100 font-bold text-lg">Pengeluaran Periode Ini</h3>
+            {salaryCycle && (
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{salaryCycle.periodLabel}</p>
+            )}
+          </div>
           <Link to="/statistics" className="text-primary text-sm font-semibold hover:underline">Detail</Link>
         </div>
+
+        {/* Salary Date Banner */}
+        {salaryCycle && !salaryCycle.salaryDate && (
+          <div className="mb-4 flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl">
+            <span className="material-symbols-outlined text-emerald-500 text-2xl shrink-0">payments</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Atur Tanggal Gajian</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Aktifkan periode keuangan berbasis siklus gaji Anda</p>
+            </div>
+            <Link to="/profile" className="shrink-0 text-xs font-bold text-primary hover:underline">Atur →</Link>
+          </div>
+        )}
 
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
           {expenseData.length === 0 ? (
