@@ -415,20 +415,23 @@ export const AccountsPage: React.FC = () => {
 
       {/* ── Transfer Modal ─────────────────────────────────── */}
       {isTransferModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
             onClick={() => !isTransferLoading && setIsTransferModalOpen(false)}
           />
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-md max-h-[90vh] flex flex-col relative z-10 shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-slide-up-bottom sm:animate-fade-in-up">
-            {/* Modal header */}
-            <div className="px-6 pt-6 pb-0 flex items-center justify-between mb-6 shrink-0">
+          <div
+            className="bg-white dark:bg-slate-900 rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-md relative z-10 shadow-2xl border border-slate-100 dark:border-slate-800 animate-slide-up-bottom sm:animate-fade-in-up flex flex-col overflow-hidden"
+            style={{ maxHeight: '90dvh' }}
+          >
+            {/* Modal header – Clean Minimalist */}
+            <div className="px-5 pt-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
-                  <span className="material-symbols-outlined">swap_horiz</span>
+                <div className="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center text-violet-600 dark:text-violet-400">
+                  <span className="material-symbols-outlined text-[22px]">swap_horiz</span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Transfer Antar Akun</h3>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Transfer Antar Akun</h3>
                   <p className="text-xs text-slate-500">Pindahkan saldo secara instan</p>
                 </div>
               </div>
@@ -442,118 +445,138 @@ export const AccountsPage: React.FC = () => {
 
             {/* Success state */}
             {transferSuccess ? (
-              <div className="px-6 pb-8 flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-3xl text-emerald-500">check_circle</span>
+              <div className="px-5 py-10 pb-[6rem] sm:pb-10 flex flex-col items-center text-center gap-4 flex-1 justify-center bg-white dark:bg-slate-900">
+                <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <span className="material-symbols-outlined text-4xl text-emerald-500">check_circle</span>
                 </div>
-                <p className="text-slate-700 dark:text-slate-200 font-semibold">{transferSuccess}</p>
+                <div>
+                  <p className="text-slate-800 dark:text-slate-100 font-bold text-base">{transferSuccess}</p>
+                  <p className="text-slate-400 text-xs mt-1">Saldo berhasil dipindahkan</p>
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleTransfer} className="px-6 pb-8 space-y-4 overflow-y-auto flex-1 min-h-0 outline-none overscroll-contain">
-                {/* From Account */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Dari Akun
-                  </label>
-                  <select
-                    value={transferForm.fromAccountId}
-                    onChange={(e) => setTransferForm({ ...transferForm, fromAccountId: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-3 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
-                  >
-                    {accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name} — {formatCurrency(a.balance, "IDR")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <form onSubmit={handleTransfer} className="flex flex-col flex-1 overflow-hidden min-h-0 bg-white dark:bg-slate-900">
+                {/* Body form: scrollable */}
+                <div className="px-5 py-5 space-y-4 overflow-y-auto flex-1 overscroll-contain">
 
-                {/* Arrow Icon */}
-                <div className="flex justify-center">
-                  <div className="w-8 h-8 rounded-full bg-violet-500/10 text-violet-500 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
+                  {/* From → To visual */}
+                  <div className="flex flex-col gap-3">
+                    {/* From Account */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
+                        Dari Akun
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={transferForm.fromAccountId}
+                          onChange={(e) => setTransferForm({ ...transferForm, fromAccountId: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all text-sm font-semibold appearance-none"
+                        >
+                          {accounts.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.name} — {formatCurrency(a.balance, "IDR")}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          <span className="material-symbols-outlined text-[20px]">expand_more</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Arrow separator (minimalist) */}
+                    <div className="flex justify-center -my-2 relative z-10">
+                      <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center shadow-sm">
+                        <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
+                      </div>
+                    </div>
+
+                    {/* To Account */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
+                        Ke Akun
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={transferForm.toAccountId}
+                          onChange={(e) => setTransferForm({ ...transferForm, toAccountId: e.target.value })}
+                          className="w-full bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl px-4 py-3.5 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all text-sm font-semibold appearance-none"
+                        >
+                          {accounts
+                            .filter((a) => a.id !== transferForm.fromAccountId)
+                            .map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.name} — {formatCurrency(a.balance, "IDR")}
+                              </option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                          <span className="material-symbols-outlined text-[20px]">expand_more</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* To Account */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Ke Akun
-                  </label>
-                  <select
-                    value={transferForm.toAccountId}
-                    onChange={(e) => setTransferForm({ ...transferForm, toAccountId: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-3 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all"
-                  >
-                    {accounts
-                      .filter((a) => a.id !== transferForm.fromAccountId)
-                      .map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.name} — {formatCurrency(a.balance, "IDR")}
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                  {/* Amount – simple clean block */}
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-violet-500 focus-within:border-transparent transition-all">
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Jumlah Transfer</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 font-bold text-lg shrink-0">Rp</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={transferForm.amount ? Number(transferForm.amount).toLocaleString('id-ID') : ''}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/\./g, '');
+                          if (/^\d*$/.test(rawValue)) {
+                            setTransferForm({ ...transferForm, amount: rawValue });
+                          }
+                        }}
+                        placeholder="0"
+                        required
+                        className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 text-2xl font-black outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 w-full"
+                      />
+                    </div>
+                  </div>
 
-                {/* Amount */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Jumlah Transfer
-                  </label>
+                  {/* Note */}
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">Rp</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <span className="material-symbols-outlined text-[20px]">edit_note</span>
+                    </span>
                     <input
                       type="text"
-                      inputMode="numeric"
-                      value={transferForm.amount ? Number(transferForm.amount).toLocaleString('id-ID') : ''}
-                      onChange={(e) => {
-                        const rawValue = e.target.value.replace(/\./g, '');
-                        if (/^\d*$/.test(rawValue)) {
-                          setTransferForm({ ...transferForm, amount: rawValue });
-                        }
-                      }}
-                      placeholder="0"
-                      required
-                      className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+                      value={transferForm.note}
+                      onChange={(e) => setTransferForm({ ...transferForm, note: e.target.value })}
+                      placeholder="Catatan (opsional)"
+                      className="w-full bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl pl-11 pr-4 py-3.5 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400 text-sm font-medium"
                     />
                   </div>
-                </div>
 
-                {/* Note */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                    Catatan <span className="text-slate-400 font-normal">(opsional)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={transferForm.note}
-                    onChange={(e) => setTransferForm({ ...transferForm, note: e.target.value })}
-                    placeholder="Mis. bayar cicilan, tabungan, dll."
-                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-3 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                {/* Error */}
-                {transferError && (
-                  <div className="flex items-start gap-2 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl px-4 py-3">
-                    <span className="material-symbols-outlined text-red-500 text-[18px] shrink-0 mt-0.5">error</span>
-                    <p className="text-sm text-red-600 dark:text-red-400 font-medium">{transferError}</p>
-                  </div>
-                )}
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isTransferLoading}
-                  className="w-full bg-violet-500 hover:bg-violet-600 disabled:opacity-60 text-white font-bold rounded-xl py-3.5 mt-2 transition-all shadow-lg shadow-violet-500/30 active:scale-[0.98] flex items-center justify-center gap-2"
-                >
-                  {isTransferLoading ? (
-                    <span className="material-symbols-outlined animate-spin text-[20px]">refresh</span>
-                  ) : (
-                    <span className="material-symbols-outlined text-[20px]">swap_horiz</span>
+                  {/* Error */}
+                  {transferError && (
+                    <div className="flex items-start gap-2.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl px-4 py-3">
+                      <span className="material-symbols-outlined text-red-500 text-[18px] shrink-0 mt-0.5">error</span>
+                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">{transferError}</p>
+                    </div>
                   )}
-                  {isTransferLoading ? "Memproses..." : "Transfer Sekarang"}
-                </button>
+                </div>
+
+                {/* Footer — solid button, minimal flair */}
+                <div className="px-5 pt-4 pb-[5.5rem] sm:pb-4 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
+                  <button
+                    type="submit"
+                    disabled={isTransferLoading}
+                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold rounded-2xl py-3.5 transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 text-base relative z-10"
+                  >
+                    {isTransferLoading ? (
+                      <span className="material-symbols-outlined animate-spin text-[22px]">refresh</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[22px]">swap_horiz</span>
+                    )}
+                    {isTransferLoading ? "Memproses..." : "Transfer Sekarang"}
+                  </button>
+                </div>
               </form>
             )}
           </div>
